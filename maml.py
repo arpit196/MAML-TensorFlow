@@ -35,6 +35,7 @@ class MAML:
 		# create or reuse network variable, not including batch_norm variable, therefore we need extra reuse mechnism
 		# to reuse batch_norm variables.
 		self.weights = self.conv_weights()
+		self.task_weights = self.conv_weights()
 		# TODO: meta-test is sort of test stage.
 		training = True if mode is 'train' else False
 
@@ -92,7 +93,7 @@ class MAML:
 				fast_weights = dict(zip(fast_weights.keys(), [fast_weights[key] - self.train_lr * gvs[key]
 				                         for key in fast_weights.keys()]))
 				# forward on theta_pi
-				query_pred = self.forward(query_x, fast_weights, training)
+				query_pred = self.forward(query_x, fast_weights, training) + self.forward(query_x, task_weights, training)
 				# we need accumulate all meta-test losses to update theta
 				query_loss = tf.nn.softmax_cross_entropy_with_logits(logits=query_pred, labels=query_y)
 				query_preds.append(query_pred)
